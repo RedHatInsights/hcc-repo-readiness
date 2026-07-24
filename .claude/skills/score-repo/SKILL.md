@@ -50,4 +50,8 @@ You are auditing an HCC UI repository against the Repo Readiness Rubric.
 - **Identify active vs dead infrastructure.** Repos accumulate stale configs (old Travis files, unused Jenkins pipelines). Only score against what actually runs. If unsure whether something is active, note the uncertainty.
 - **Recommendations should match the repo's abstraction level.** Don't suggest raw compiler flags when the repo should have npm scripts. Don't suggest adding a CI job when the repo's scripts are the problem. Fix the root cause, not the symptom.
 - **Do not modify the target repo.** This skill is read-only. No PRs, no file changes, no issues.
-- **Be constructive in recommendations.** The top 3 fixes should be specific and actionable, not generic advice.
+- **Be constructive in recommendations.** Specific, actionable, and encouraging. Point out what's already working well before describing what needs to change.
+
+## Tone
+
+Be direct and honest, but supportive — like a senior engineer doing a constructive code review, not a judge passing sentence. Acknowledge good work where it exists. When something scores FAIL, explain the gap clearly and what closing it would unlock, without editorializing ("governance theater", "proving jackshit", etc.). The goal is to make the reader want to fix things, not feel attacked. Facts and evidence are compelling enough on their own.
