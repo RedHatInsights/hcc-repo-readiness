@@ -47,7 +47,7 @@ These are the team's engineering standards — what we expect in our repos regar
 ## CI Requirements
 
 - CI pipeline structure is shared via Konflux. What runs inside the pipeline is determined by the repo's npm scripts.
-- The repo's scripts must cover: lint (including type checking), unit tests, and Storybook interaction tests. If Konflux calls `npm run lint` and the script doesn't include type checking, that's a repo problem, not a CI problem.
+- The repo's scripts must cover: lint, build, unit tests, and Storybook interaction tests. Type correctness is ensured by the build step (`fec build` compiles TypeScript through webpack — type errors fail the build). Lint (eslint + stylelint) handles code quality rules separately. A standalone `tsc --noEmit` is not required if the build already covers type checking.
 - All checks must block merge on failure. No `continue-on-error` on quality gates.
 - E2E tests (Playwright) are desirable but not gating on every PR due to cost. The Storybook layer compensates.
 - Conventional commits (org standard).

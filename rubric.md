@@ -17,8 +17,8 @@ Each dimension is scored as: PASS / PARTIAL / FAIL
 **Question**: Is it clear who is responsible for this repo, and was that a deliberate decision?
 
 **PASS**: CODEOWNERS file exists with named individuals (not just team aliases). Ownership covers the meaningful areas of the codebase. Assignment was intentional.
-**PARTIAL**: CODEOWNERS exists but is stale (people who left), overly broad (one entry for `*`), or uses only team aliases that nobody actively monitors.
-**FAIL**: No CODEOWNERS, or ownership is purely accidental (whoever last touched it).
+**PARTIAL**: CODEOWNERS exists with named individuals but is stale (people who left, coverage gaps) or lacks path-specific granularity.
+**FAIL**: No CODEOWNERS, or CODEOWNERS is a single catch-all team alias (`* @team`). A team alias that nobody monitors is the same as no ownership.
 
 **Where to look**: `.github/CODEOWNERS`, `CODEOWNERS`
 
@@ -32,8 +32,8 @@ Each dimension is scored as: PASS / PARTIAL / FAIL
   - Docs index pointing to retrievable files (not everything inline)
   - Key file locations (the tree, so the agent orients without running `find`)
   Content is accurate, rules are actionable, referenced docs exist, and guidance reflects the team's actual standards — not just the current state of the code. An auto-generated file that describes how the repo currently works without encoding how it SHOULD work is not guidance. It teaches agents to reproduce the status quo, including its mistakes.
-**PARTIAL**: File exists but is shallow (just a project description), outdated, references docs that don't exist, or was auto-generated without human review. Also PARTIAL if the file has the right structure but encodes patterns the team doesn't actually endorse (e.g., recommending a component library the team has moved away from).
-**FAIL**: No agent guidance, or file exists but contains no actionable rules.
+**PARTIAL**: File exists with the right structure and has been human-reviewed, but has gaps — some sections are thin, some referenced docs are missing, or rules exist but don't cover all critical boundaries.
+**FAIL**: No agent guidance. Or: file exists but was auto-generated without human review against team standards. Or: file encodes patterns the team doesn't endorse (e.g., recommending a component library the team has moved away from). Guidance that steers agents toward wrong patterns is worse than no guidance — it's actively harmful.
 
 **Where to look**: `AGENTS.md`, `CLAUDE.md`, `.claude/`
 
@@ -42,8 +42,8 @@ Each dimension is scored as: PASS / PARTIAL / FAIL
 **Question**: Can a developer or agent violate a rule that matters without CI catching it?
 
 **PASS**: ESLint (or equivalent) is configured with project-specific rules that enforce meaningful boundaries — not just formatting. Import restrictions, pattern enforcement, or domain-specific constraints exist and match the repo's risk profile. Rules are active in CI (not just in editor config). Principle: if a constraint is worth documenting in AGENTS.md as a warning, it's worth enforcing in lint. Documented rules without enforcement are suggestions; enforced rules are governance.
-**PARTIAL**: Standard lint + prettier/format configured and running in CI, but no project-specific rules. Generic config copied from another repo without adaptation.
-**FAIL**: No lint in CI, or lint exists but is full of suppressions/ignores that gut its value.
+**PARTIAL**: Project-specific rules exist but don't cover all boundaries documented in AGENTS.md. Or: rules exist but some are warn-only instead of error.
+**FAIL**: No project-specific enforcement rules. Standard shared lint config only (formatting, generic TS rules) with no repo-specific boundaries. If the AGENTS.md documents constraints that aren't enforced in lint, this dimension is FAIL — documented rules without enforcement are suggestions, not governance.
 
 **Where to look**: `.eslintrc.*`, `eslint.config.*`, `eslint-rules/`, CI config (`.github/workflows/`, `Jenkinsfile`, `.konflux/`), look for `eslint-disable` density
 
@@ -51,9 +51,9 @@ Each dimension is scored as: PASS / PARTIAL / FAIL
 
 **Question**: Can you see a green checkmark and trust it without pulling the branch locally?
 
-**PASS**: CI runs type checking, lint, and tests. None are skipped or set to `continue-on-error`. Failures block merge. The pipeline covers the meaningful quality gates for this repo.
-**PARTIAL**: CI exists and runs something, but key checks are missing (e.g., type checking skipped), or some checks are allowed to fail without blocking.
-**FAIL**: No CI, or CI is a formality (only runs build, not tests).
+**PASS**: CI runs build (which covers type checking via `fec build`), lint, and tests. None are skipped or set to `continue-on-error`. Failures block merge. Whether the *right* things are being linted and tested is scored in other dimensions (3, 5, 6) — this dimension scores whether CI infrastructure is trustworthy as a gate.
+**PARTIAL**: CI runs but some checks are allowed to fail without blocking, or key steps (build, lint, or tests) are missing from the pipeline.
+**FAIL**: No CI, or CI is a formality that doesn't block merge on failure.
 
 **Where to look**: `.github/workflows/`, `Jenkinsfile`, `.konflux/`, CI status checks configuration in repo settings
 
@@ -61,9 +61,9 @@ Each dimension is scored as: PASS / PARTIAL / FAIL
 
 **Question**: Does CI test real user-facing behavior, or just unit logic?
 
-**PASS**: Storybook (or equivalent) exists with interaction tests that exercise user flows at the mock boundary. Tests run in CI. Coverage is meaningful — not just rendering checks but actual user interactions (click, fill, navigate, verify state changes).
-**PARTIAL**: Storybook exists with some stories, but few or no interaction tests. Or: interaction tests exist but don't run in CI. Or: only unit tests exist but they cover behavior reasonably well through hook/component testing.
-**FAIL**: No behavioral testing. Only unit tests on utilities, or no tests at all.
+**PASS**: Storybook (or equivalent) exists with interaction tests that exercise user flows at the mock boundary. Tests run in CI and block merge. Coverage is meaningful — not just rendering checks but actual user interactions (click, fill, navigate, verify state changes).
+**PARTIAL**: Storybook interaction tests exist, run in CI, but coverage is thin (less than half of components have play functions) or limited to simple rendering checks.
+**FAIL**: No interaction tests in CI. This includes: stories exist but have no play functions, or play functions exist but don't run in any CI pipeline. Tests that never run in CI are not verification — they're documentation that might be wrong.
 
 **Where to look**: `.storybook/`, `**/*.stories.tsx`, `package.json` (test scripts), CI config for storybook test runs
 
@@ -81,9 +81,9 @@ Each dimension is scored as: PASS / PARTIAL / FAIL
 
 **Question**: Can a human or agent learn what this app does, how it's built, and where to make changes safely — without reading every file?
 
-**PASS**: Documentation exists covering the app's scope, architecture, and key patterns. The AGENTS.md docs index points to these files. Docs are accurate and maintained.
-**PARTIAL**: Some docs exist (a README, maybe an architecture overview) but they're outdated, incomplete, or not referenced from AGENTS.md. Or: docs were auto-generated and never reviewed for accuracy.
-**FAIL**: No meaningful docs beyond a boilerplate README. Understanding the app requires reading the code.
+**PASS**: Documentation exists covering the app's scope, architecture, and key patterns. The AGENTS.md docs index points to these files. Docs are accurate, maintained, and reflect the team's actual standards.
+**PARTIAL**: Docs exist, are human-reviewed, and cover the basics, but have gaps — missing sections, no docs index in AGENTS.md, or incomplete coverage of the app's architecture.
+**FAIL**: No meaningful docs beyond a boilerplate README. Or: docs exist but encode wrong patterns (wrong libraries, outdated architecture). Or: docs were auto-generated and never reviewed. Docs that teach agents wrong patterns are worse than no docs.
 
 **Where to look**: `src/docs/`, `docs/`, `README.md`, `ARCHITECTURE.md`, whatever AGENTS.md docs index references
 
