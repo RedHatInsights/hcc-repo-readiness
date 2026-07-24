@@ -29,7 +29,7 @@ You are auditing an HCC UI repository against the Repo Readiness Rubric.
 
    **4. CI Trustworthiness**: Identify which CI system is ACTUALLY ACTIVE for this repo. HCC repos use Konflux (.konflux/ directory) as the primary CI. GitHub Actions (.github/workflows/) may also be active. Travis (.travis.yml), Jenkins (Jenkinsfile), and other legacy configs may exist in the repo but be INACTIVE — do not score against dead CI configs. Check package.json scripts to understand what the CI pipelines invoke. Evaluate whether the active CI runs lint, type checking, and tests through the repo's own npm scripts (e.g., `npm run lint`, `npm test`). If type checking is not part of the lint/test scripts, that's a gap in the repo's scripts, not a missing CI job.
 
-   **5. Behavioral Verification**: Check for .storybook/ config. Find *.stories.tsx files. Do stories have play functions (interaction tests)? Do they exercise real user flows or just render? Does the active CI run storybook tests?
+   **5. Behavioral Verification**: Check for .storybook/ config. Find *.stories.tsx files. Do stories have play functions (interaction tests)? Do they exercise real user flows or just render? Check package.json for a `test-storybook` or `test:storybook` script. Check if CI runs it. **This is a hard rule: if there's no storybook test script in package.json or it doesn't run in CI, this dimension is FAIL regardless of how many play functions exist.** Play functions that don't run in CI are not verification.
 
    **6. Data Layer Hygiene**: Check for mock directories, handler factories, seed data. Are mocks typed? Look at stories — do they use inline http.get/http.post handlers or import from factories? Is there any lint rule restricting inline mocks?
 
