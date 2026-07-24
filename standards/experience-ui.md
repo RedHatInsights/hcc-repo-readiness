@@ -20,6 +20,7 @@ These are the team's engineering standards — what we expect in our repos regar
 ## Testing
 
 - **Cypress is deprecated.** Use Storybook for component testing and Playwright for E2E. Existing Cypress tests are legacy — do not count them as passing behavioral verification or E2E maturity. Do not write new Cypress tests.
+- **Jest snapshots are banned.** HTML snapshots committed to the repo prove nothing — they pass until someone updates them, and nobody reviews the diff. Replace with Storybook interaction tests that verify actual behavior. Existing snapshot tests are technical debt, not coverage.
 - **Jest for non-React code.** Utility functions, pure logic, data transformations — anything that doesn't touch React gets a Jest unit test.
 - **Storybook for component correctness.** Each component has a `.stories.tsx` file that tests its behavior through interaction tests (play functions) with MSW handlers. This is the first-class test artifact for React code.
 - **User journey stories for integration.** Cross-component flows are tested through user journey stories that exercise the app as a user would — no context injection, no mocking internals, only MSW handlers at the network boundary.
