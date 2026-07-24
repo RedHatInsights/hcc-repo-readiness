@@ -111,16 +111,16 @@ After evaluating all 8 dimensions, produce the report in two parts: a summary ta
 REPO READINESS REPORT: [repo-name]
 Date: [date]
 
-| # | Dimension                | Score   |
-|---|--------------------------|---------|
-| 1 | Ownership                | [P/F/~] |
-| 2 | Agent Guidance           | [P/F/~] |
-| 3 | Automated Enforcement    | [P/F/~] |
-| 4 | CI Trustworthiness       | [P/F/~] |
-| 5 | Behavioral Verification  | [P/F/~] |
-| 6 | Data Layer Hygiene       | [P/F/~] |
-| 7 | Structured Docs          | [P/F/~] |
-| 8 | E2E Testing Maturity     | [P/F/~] |
+| # | Dimension                | Score        |
+|---|--------------------------|--------------|
+| 1 | Ownership                | PASS/PARTIAL/FAIL |
+| 2 | Agent Guidance           | PASS/PARTIAL/FAIL |
+| 3 | Automated Enforcement    | PASS/PARTIAL/FAIL |
+| 4 | CI Trustworthiness       | PASS/PARTIAL/FAIL |
+| 5 | Behavioral Verification  | PASS/PARTIAL/FAIL |
+| 6 | Data Layer Hygiene       | PASS/PARTIAL/FAIL |
+| 7 | Structured Docs          | PASS/PARTIAL/FAIL |
+| 8 | E2E Testing Maturity     | PASS/PARTIAL/FAIL |
 
 Score: [X/8] (PASS=1, PARTIAL=0.5, FAIL=0)
 Recommended tier: [T1/T2/T3] — [one-line justification]
