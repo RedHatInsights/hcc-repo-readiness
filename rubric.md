@@ -103,34 +103,43 @@ Each dimension is scored as: PASS / PARTIAL / FAIL
 
 **Where to look**: `e2e/`, `playwright.config.*`, `cypress/`, `package.json` (seed/cleanup/e2e scripts), `e2e/fixtures/`, test files for hardcoded strings vs seed map imports
 
-## Scoring Summary
+## Output Format
 
-After evaluating all 8 dimensions, produce a scorecard:
+After evaluating all 8 dimensions, produce the report in two parts: a summary table (scores only, no evidence — keep it scannable), then a detailed breakdown with one paragraph per dimension including evidence and a recommendation.
 
 ```
 REPO READINESS REPORT: [repo-name]
 Date: [date]
 
-| # | Dimension                | Score   | Evidence |
-|---|--------------------------|---------|----------|
-| 1 | Ownership                | [P/F/~] | [brief]  |
-| 2 | Agent Guidance           | [P/F/~] | [brief]  |
-| 3 | Automated Enforcement    | [P/F/~] | [brief]  |
-| 4 | CI Trustworthiness       | [P/F/~] | [brief]  |
-| 5 | Behavioral Verification  | [P/F/~] | [brief]  |
-| 6 | Data Layer Hygiene       | [P/F/~] | [brief]  |
-| 7 | Structured Docs          | [P/F/~] | [brief]  |
-| 8 | E2E Testing Maturity     | [P/F/~] | [brief]  |
+| # | Dimension                | Score   |
+|---|--------------------------|---------|
+| 1 | Ownership                | [P/F/~] |
+| 2 | Agent Guidance           | [P/F/~] |
+| 3 | Automated Enforcement    | [P/F/~] |
+| 4 | CI Trustworthiness       | [P/F/~] |
+| 5 | Behavioral Verification  | [P/F/~] |
+| 6 | Data Layer Hygiene       | [P/F/~] |
+| 7 | Structured Docs          | [P/F/~] |
+| 8 | E2E Testing Maturity     | [P/F/~] |
 
-Score: [X/8] (PASS counts as 1, PARTIAL as 0.5, FAIL as 0)
+Score: [X/8] (PASS=1, PARTIAL=0.5, FAIL=0)
+Recommended tier: [T1/T2/T3] — [one-line justification]
 
-RECOMMENDED REVIEW TIER: [T1/T2/T3]
-Based on: [risk profile] repo with [X/8] governance score
+---
 
-TOP 3 FIXES (highest impact first):
-1. [dimension] — [what to do and why it matters]
-2. [dimension] — [what to do and why it matters]
-3. [dimension] — [what to do and why it matters]
+### 1. Ownership — [PASS/PARTIAL/FAIL]
+
+[Evidence: what was found, what's good, what's missing. 2-4 sentences.]
+
+**Recommendation:** [What to do to improve this dimension. Skip if PASS.]
+
+### 2. Agent Guidance — [PASS/PARTIAL/FAIL]
+
+[Evidence...]
+
+**Recommendation:** [...]
+
+[...repeat for all 8 dimensions...]
 ```
 
 ## Tier Recommendation Logic
