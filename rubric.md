@@ -1,0 +1,143 @@
+# Repo Readiness Rubric
+
+Universal scorecard for evaluating HCC UI repository governance maturity. Designed to determine what review process a repo can safely operate under.
+
+## Scoring Principles
+
+1. **The presence of a file is not a passing score.** Each dimension is scored on whether it actively constrains the quality of work, not whether an artifact exists.
+2. **Scoring requires in-depth, honest analysis.** Read the files. Evaluate their quality. An AGENTS.md that accurately describes a repo with no boundaries is not agent guidance — it's a map of a mess.
+3. **Less human oversight requires more infrastructure, not less.** A repo that wants lighter review (T3) needs a higher governance score than one operating under full human review (T1).
+
+## Dimensions
+
+Each dimension is scored as: PASS / PARTIAL / FAIL
+
+### 1. Ownership
+
+**Question**: Is it clear who is responsible for this repo, and was that a deliberate decision?
+
+**PASS**: CODEOWNERS file exists with named individuals (not just team aliases). Ownership covers the meaningful areas of the codebase. Assignment was intentional.
+**PARTIAL**: CODEOWNERS exists but is stale (people who left), overly broad (one entry for `*`), or uses only team aliases that nobody actively monitors.
+**FAIL**: No CODEOWNERS, or ownership is purely accidental (whoever last touched it).
+
+**Where to look**: `.github/CODEOWNERS`, `CODEOWNERS`
+
+### 2. Agent Guidance
+
+**Question**: Can an AI agent orient itself in this repo and know what rules to follow without guessing?
+
+**PASS**: AGENTS.md (or CLAUDE.md with equivalent content) exists with four keystone sections:
+  - Project overview (what the app is, its architecture, key boundaries)
+  - Non-negotiable rules (things that must never be violated)
+  - Docs index pointing to retrievable files (not everything inline)
+  - Key file locations (the tree, so the agent orients without running `find`)
+  Content is accurate, rules are actionable, referenced docs exist, and guidance reflects the team's actual standards — not just the current state of the code. An auto-generated file that describes how the repo currently works without encoding how it SHOULD work is not guidance. It teaches agents to reproduce the status quo, including its mistakes.
+**PARTIAL**: File exists but is shallow (just a project description), outdated, references docs that don't exist, or was auto-generated without human review. Also PARTIAL if the file has the right structure but encodes patterns the team doesn't actually endorse (e.g., recommending a component library the team has moved away from).
+**FAIL**: No agent guidance, or file exists but contains no actionable rules.
+
+**Where to look**: `AGENTS.md`, `CLAUDE.md`, `.claude/`
+
+### 3. Automated Enforcement
+
+**Question**: Can a developer or agent violate a rule that matters without CI catching it?
+
+**PASS**: ESLint (or equivalent) is configured with project-specific rules that enforce meaningful boundaries — not just formatting. Import restrictions, pattern enforcement, or domain-specific constraints exist and match the repo's risk profile. Rules are active in CI (not just in editor config). Principle: if a constraint is worth documenting in AGENTS.md as a warning, it's worth enforcing in lint. Documented rules without enforcement are suggestions; enforced rules are governance.
+**PARTIAL**: Standard lint + prettier/format configured and running in CI, but no project-specific rules. Generic config copied from another repo without adaptation.
+**FAIL**: No lint in CI, or lint exists but is full of suppressions/ignores that gut its value.
+
+**Where to look**: `.eslintrc.*`, `eslint.config.*`, `eslint-rules/`, CI config (`.github/workflows/`, `Jenkinsfile`, `.konflux/`), look for `eslint-disable` density
+
+### 4. CI Trustworthiness
+
+**Question**: Can you see a green checkmark and trust it without pulling the branch locally?
+
+**PASS**: CI runs type checking, lint, and tests. None are skipped or set to `continue-on-error`. Failures block merge. The pipeline covers the meaningful quality gates for this repo.
+**PARTIAL**: CI exists and runs something, but key checks are missing (e.g., type checking skipped), or some checks are allowed to fail without blocking.
+**FAIL**: No CI, or CI is a formality (only runs build, not tests).
+
+**Where to look**: `.github/workflows/`, `Jenkinsfile`, `.konflux/`, CI status checks configuration in repo settings
+
+### 5. Behavioral Verification
+
+**Question**: Does CI test real user-facing behavior, or just unit logic?
+
+**PASS**: Storybook (or equivalent) exists with interaction tests that exercise user flows at the mock boundary. Tests run in CI. Coverage is meaningful — not just rendering checks but actual user interactions (click, fill, navigate, verify state changes).
+**PARTIAL**: Storybook exists with some stories, but few or no interaction tests. Or: interaction tests exist but don't run in CI. Or: only unit tests exist but they cover behavior reasonably well through hook/component testing.
+**FAIL**: No behavioral testing. Only unit tests on utilities, or no tests at all.
+
+**Where to look**: `.storybook/`, `**/*.stories.tsx`, `package.json` (test scripts), CI config for storybook test runs
+
+### 6. Data Layer Hygiene
+
+**Question**: Are mocks governed, or can agents generate throwaway mocks that make tests pass without proving anything?
+
+**PASS**: Mock data is typed against real API contracts. Handler factories exist and are the required way to set up mocks (inline handlers are restricted or banned). Seed data uses constants, not inline strings. When API types change, mock type mismatches break the build.
+**PARTIAL**: Some mock structure exists (MSW is set up, some handlers are factored out) but inline mocks are common and not restricted. Mock types may drift from real API types without detection.
+**FAIL**: No mock governance. Each test/story creates its own mocks ad-hoc. Or: no mocks at all (tests hit real APIs or skip network testing entirely).
+
+**Where to look**: `**/mocks/`, `**/handlers.*`, `**/*.stories.tsx` (check for inline `http.get`/`http.post`), MSW configuration, eslint rules restricting mock imports
+
+### 7. Structured Docs
+
+**Question**: Can a human or agent learn what this app does, how it's built, and where to make changes safely — without reading every file?
+
+**PASS**: Documentation exists covering the app's scope, architecture, and key patterns. The AGENTS.md docs index points to these files. Docs are accurate and maintained.
+**PARTIAL**: Some docs exist (a README, maybe an architecture overview) but they're outdated, incomplete, or not referenced from AGENTS.md. Or: docs were auto-generated and never reviewed for accuracy.
+**FAIL**: No meaningful docs beyond a boilerplate README. Understanding the app requires reading the code.
+
+**Where to look**: `src/docs/`, `docs/`, `README.md`, `ARCHITECTURE.md`, whatever AGENTS.md docs index references
+
+### 8. E2E Testing Maturity
+
+**Question**: Can the repo prove its features work against a real environment, and can those tests run reliably in CI without flaking or polluting shared state?
+
+**PASS**: E2E tests exist with:
+  - Structured docblocks at the top of each spec file (decision tree, personas, data prerequisites)
+  - Seed fixtures for dynamic data creation (no hardcoded UUIDs or entity names in test files)
+  - Prefix-based isolation so parallel CI runs don't conflict
+  - Automated seed/test/cleanup lifecycle via npm scripts
+  - Multi-persona testing matrix (at minimum: admin + non-admin permission levels)
+  - Test files reference seed map entries or constants, never inline magic strings
+**PARTIAL**: E2E tests exist but have structural problems: hardcoded IDs/strings, no cleanup scripts, no isolation mechanism, single persona only, or tests exist but aren't runnable in CI.
+**FAIL**: No E2E tests, or only smoke tests that don't exercise real user journeys.
+
+**Where to look**: `e2e/`, `playwright.config.*`, `cypress/`, `package.json` (seed/cleanup/e2e scripts), `e2e/fixtures/`, test files for hardcoded strings vs seed map imports
+
+## Scoring Summary
+
+After evaluating all 8 dimensions, produce a scorecard:
+
+```
+REPO READINESS REPORT: [repo-name]
+Date: [date]
+
+| # | Dimension                | Score   | Evidence |
+|---|--------------------------|---------|----------|
+| 1 | Ownership                | [P/F/~] | [brief]  |
+| 2 | Agent Guidance           | [P/F/~] | [brief]  |
+| 3 | Automated Enforcement    | [P/F/~] | [brief]  |
+| 4 | CI Trustworthiness       | [P/F/~] | [brief]  |
+| 5 | Behavioral Verification  | [P/F/~] | [brief]  |
+| 6 | Data Layer Hygiene       | [P/F/~] | [brief]  |
+| 7 | Structured Docs          | [P/F/~] | [brief]  |
+| 8 | E2E Testing Maturity     | [P/F/~] | [brief]  |
+
+Score: [X/8] (PASS counts as 1, PARTIAL as 0.5, FAIL as 0)
+
+RECOMMENDED REVIEW TIER: [T1/T2/T3]
+Based on: [risk profile] repo with [X/8] governance score
+
+TOP 3 FIXES (highest impact first):
+1. [dimension] — [what to do and why it matters]
+2. [dimension] — [what to do and why it matters]
+3. [dimension] — [what to do and why it matters]
+```
+
+## Tier Recommendation Logic
+
+- Score < 3: Must operate as T1 regardless of risk profile
+- Score 3-5: May operate as T2 if risk profile allows
+- Score 6+: May operate at its natural risk-based tier (T2 or T3)
+- Score 8: Full governance. Repo can safely operate at T3 if risk profile warrants it
+
+These thresholds are starting points. Adjust based on experience.
